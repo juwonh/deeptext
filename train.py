@@ -170,7 +170,7 @@ def train(opt):
         optimizer.step()
 
         loss_avg.add(cost)
-
+       
         # validation part
         if (iteration + 1) % opt.valInterval == 0 or iteration == 0: # To see training progress, we also conduct validation when 'iteration == 0' 
             elapsed_time = time.time() - start_time
@@ -228,39 +228,43 @@ def train(opt):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--exp_name', help='Where to store logs and models')
+    parser.add_argument('--exp_name', default='0411', help='Where to store logs and models')
     parser.add_argument('--train_data', required=True, help='path to training dataset')
     parser.add_argument('--valid_data', required=True, help='path to validation dataset')
     parser.add_argument('--manualSeed', type=int, default=1111, help='for random seed setting')
+    
     parser.add_argument('--workers', type=int, help='number of data loading workers', default=4)
     parser.add_argument('--batch_size', type=int, default=192, help='input batch size')
-    parser.add_argument('--num_iter', type=int, default=300000, help='number of iterations to train for')
+    parser.add_argument('--num_iter', type=int, default=200000, help='number of iterations to train for')
     parser.add_argument('--valInterval', type=int, default=2000, help='Interval between each validation')
     parser.add_argument('--saved_model', default='', help="path to model to continue training")
     parser.add_argument('--FT', action='store_true', help='whether to do fine-tuning')
-    parser.add_argument('--adam', action='store_true', help='Whether to use adam (default is Adadelta)')
+    parser.add_argument('--adam', default=False, action='store_true', help='Whether to use adam (default is Adadelta)')
     parser.add_argument('--lr', type=float, default=1, help='learning rate, default=1.0 for Adadelta')
     parser.add_argument('--beta1', type=float, default=0.9, help='beta1 for adam. default=0.9')
     parser.add_argument('--rho', type=float, default=0.95, help='decay rate rho for Adadelta. default=0.95')
     parser.add_argument('--eps', type=float, default=1e-8, help='eps for Adadelta. default=1e-8')
     parser.add_argument('--grad_clip', type=float, default=5, help='gradient clipping value. default=5')
-    parser.add_argument('--baiduCTC', action='store_true', help='for data_filtering_off mode')
+    parser.add_argument('--baiduCTC', default=False, action='store_true', help='for data_filtering_off mode')
     """ Data processing """
     parser.add_argument('--select_data', type=str, default='MJ-ST',
                         help='select training data (default is MJ-ST, which means MJ and ST used as training data)')
-    parser.add_argument('--batch_ratio', type=str, default='0.5-0.5',
+    parser.add_argument('--batch_ratio', type=str, default='0.9-0.1',
                         help='assign ratio for each selected data in the batch')
     parser.add_argument('--total_data_usage_ratio', type=str, default='1.0',
                         help='total data usage ratio, this ratio is multiplied to total number of data.')
     parser.add_argument('--batch_max_length', type=int, default=25, help='maximum-label-length')
     parser.add_argument('--imgH', type=int, default=32, help='the height of the input image')
     parser.add_argument('--imgW', type=int, default=100, help='the width of the input image')
-    parser.add_argument('--rgb', action='store_true', help='use rgb input')
+    parser.add_argument('--rgb', default=False, action='store_true', help='use rgb input')
     parser.add_argument('--character', type=str,
-                        default='0123456789abcdefghijklmnopqrstuvwxyz', help='character label')
-    parser.add_argument('--sensitive', action='store_true', help='for sensitive character mode')
-    parser.add_argument('--PAD', action='store_true', help='whether to keep ratio then pad for image resize')
-    parser.add_argument('--data_filtering_off', action='store_true', help='for data_filtering_off mode')
+                      # default='0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz,.?!"\'$#%&@()*+-/=:<>^'
+                        default='0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ,.?!"\'$#%&@()*+-/=:<>^가각간갇갈갉감갑값갓갔강갖갗같갚갛개객갠갤갬갭갯갰갱갸걀걔걘거걱건걷걸검겁것겄겅겆겉겊겋게겐겔겟겠겡겨격겪견결겸겹겻겼경곁계곕곗고곡곤곧골곪곬곯곰곱곳공곶과곽관괄괌광괘괜괭괴괸굉교구국군굳굴굵굶굼굽굿궁궂궈권궐궜궝궤귀귄귈귓규균귤그극근글긁금급긋긍기긴길김깁깃깅깊까깍깎깐깔깜깝깟깡깥깨깬깰깻깼깽꺄꺼꺽꺾껀껄껌껍껏껐껑께껴꼈꼍꼐꼬꼭꼴꼼꼽꼿꽁꽂꽃꽉꽝꽤꽥꾀꾜꾸꾹꾼꿀꿇꿈꿉꿋꿍꿎꿔꿨꿩꿰꿴뀄뀌뀐뀔뀜뀝끄끈끊끌끓끔끕끗끙끝끼끽낀낄낌낍낏낑나낙낚난낟날낡남납낫났낭낮낯낱낳내낵낸낼냄냅냇냈냉냐냔냘냥너넉넋넌널넓넘넙넛넜넝넣네넥넨넬넴넵넷넸넹녀녁년념녔녕녘녜노녹논놀놈놋농높놓놔놨뇌뇨뇩뇽누눅눈눌눔눕눗눠눴뉘뉜뉩뉴늄늅늉느늑는늘늙늠늡능늦늪늬니닉닌닐님닙닛닝닢다닥닦단닫달닭닮닯닳담답닷당닻닿대댁댄댈댐댑댓댔댕댜더덕덖던덜덟덤덥덧덩덫덮데덱덴델뎀뎃뎅뎌뎠뎨도독돈돋돌돔돕돗동돛돝돼됐되된될됨됩됴두둑둔둘둠둡둣둥둬뒀뒤뒬뒷뒹듀듈듐드득든듣들듦듬듭듯등듸디딕딘딛딜딤딥딧딨딩딪따딱딴딸땀땄땅때땐땔땜땝땠땡떠떡떤떨떫떰떱떳떴떵떻떼떽뗀뗄뗍뗏뗐뗑또똑똘똥뙤뚜뚝뚤뚫뚱뛰뛴뛸뜀뜁뜨뜩뜬뜯뜰뜸뜻띄띈띌띔띕띠띤띨띱띵라락란랄람랍랏랐랑랒랗래랙랜랠램랩랫랬랭랴략량러럭런럴럼럽럿렀렁렇레렉렌렐렘렙렛렝려력련렬렴렵렷렸령례로록론롤롬롭롯롱롸롹뢰뢴뢸룃료룐룡루룩룬룰룸룹룻룽뤄뤘뤼류륙륜률륨륭르륵른를름릅릇릉릎리릭린릴림립릿링마막만많맏말맑맘맙맛망맞맡맣매맥맨맬맴맵맷맸맹맺먀먁머먹먼멀멈멋멍멎메멕멘멜멤멥멧멩며멱면멸몄명몇모목몫몬몰몸몹못몽뫼묘무묵묶문묻물묽뭄뭅뭇뭉뭍뭏뭐뭔뭘뭡뭣뮈뮌뮐뮤뮬므믈믐미믹민믿밀밈밉밋밌밍및밑바박밖반받발밝밟밤밥밧방밭배백밴밸뱀뱁뱃뱄뱅뱉뱍뱐버벅번벌범법벗벙벚베벡벤벨벰벱벳벵벼벽변별볍볏볐병볕보복볶본볼봄봅봇봉봐봤뵈뵐뵙부북분붇불붉붐붓붕붙뷔뷰뷴뷸브븐블비빅빈빌빔빕빗빙빚빛빠빡빤빨빳빴빵빻빼빽뺀뺄뺌뺏뺐뺑뺨뻐뻑뻔뻗뻘뻣뻤뻥뻬뼈뼉뼘뽀뽈뽐뽑뽕뾰뿌뿍뿐뿔뿜쁘쁜쁠쁨삐삔삘사삭삯산살삵삶삼삽삿샀상샅새색샌샐샘샙샛샜생샤샨샬샴샵샷샹서석섞선섣설섬섭섯섰성섶세섹센셀셈셉셋셌셍셔션셜셨셰셴셸소속손솔솜솝솟송솥쇄쇠쇤쇳쇼숀숄숍수숙순숟술숨숩숫숭숯숱숲숴쉐쉘쉬쉭쉰쉴쉼쉽슈슐슘슛슝스슥슨슬슭슴습슷승시식신싣실싫심십싯싱싶싸싹싼쌀쌈쌉쌌쌍쌓쌔쌘쌩써썩썬썰썸썹썼썽쎄쎈쏘쏙쏜쏟쏠쏭쏴쐈쐐쐬쑤쑥쑨쒀쒔쓰쓱쓴쓸씀씁씌씨씩씬씰씸씹씻씽아악안앉않알앎앓암압앗았앙앞애액앤앨앰앱앳앴앵야약얀얄얇얌얍얏양얕얗얘얜어억언얹얻얼얽엄업없엇었엉엊엌엎에엑엔엘엠엡엣엥여역엮연열엷염엽엾엿였영옅옆옇예옌옐옙옛오옥온올옭옮옳옴옵옷옹옻와왁완왈왑왓왔왕왜왠왱외왼요욕욘욜욤용우욱운울움웁웃웅워웍원월웜웠웡웨웬웰웸웹위윅윈윌윔윗윙유육윤율윱윳융으윽은을읊음읍응의읜읠이익인일읽잃임입잇있잉잊잎자작잔잖잘잠잡잣잤장잦재잭잰잴잽잿쟀쟁쟈쟉쟤저적전절젊점접젓정젖제젝젠젤젬젭젯져젼졀졌졍조족존졸좀좁종좇좋좌좍좽죄죠죤주죽준줄줌줍줏중줘줬쥐쥔쥘쥬쥴즈즉즌즐즘즙증지직진짇질짊짐집짓징짖짙짚짜짝짠짢짤짧짬짭짰짱째짹짼쨀쨉쨋쨌쨍쩌쩍쩐쩔쩜쩝쩡쩨쪄쪘쪼쪽쫀쫄쫑쫓쫙쬐쭈쭉쭐쭙쯔쯤쯧찌찍찐찔찜찝찡찢찧차착찬찮찰참찹찻찼창찾채책챈챌챔챕챗챘챙챠챤처척천철첨첩첫청체첵첸첼쳄쳇쳉쳐쳔쳤초촉촌촘촛총촨촬최쵸추축춘출춤춥춧충춰췄췌취췬츄츠측츨츰층치칙친칠칡침칩칫칭카칵칸칼캄캅캇캉캐캔캘캠캡캣캤캥캬커컥컨컫컬컴컵컷컸컹케켄켈켐켓켕켜켠켤켭켯켰코콕콘콜콤콥콧콩콰콱콴콸쾅쾌쾡쾨쾰쿄쿠쿡쿤쿨쿰쿵쿼퀀퀄퀘퀭퀴퀵퀸퀼큐큘크큰클큼큽키킥킨킬킴킵킷킹타탁탄탈탉탐탑탓탔탕태택탠탤탬탭탯탰탱터턱턴털텀텁텃텄텅테텍텐텔템텝텡텨톈토톡톤톨톰톱톳통퇴툇투툭툰툴툼퉁퉈퉜튀튄튈튕튜튠튤튬트특튼튿틀틈틉틋틔티틱틴틸팀팁팅파팍팎판팔팜팝팟팠팡팥패팩팬팰팸팻팼팽퍼퍽펀펄펌펍펐펑페펙펜펠펨펩펫펭펴편펼폄폈평폐포폭폰폴폼폿퐁표푭푸푹푼풀품풋풍퓨퓬퓰퓸프픈플픔픕피픽핀필핌핍핏핑하학한할핥함합핫항해핵핸핼햄햅햇했행햐향허헉헌헐험헙헛헝헤헥헨헬헴헵헷헹혀혁현혈혐협혓혔형혜호혹혼홀홈홉홋홍홑화확환활홧황홰홱횃회획횝횟횡효후훅훈훌훑훔훗훤훨훼휄휑휘휙휜휠휩휭휴휼흄흉흐흑흔흘흙흠흡흣흥흩희흰흽히힉힌힐힘힙힝'
+                        , help='character label')         
+                      #  default='!"#$%&\'()*+-/0123456789:;<=>?@[\\]^_{|}~£¥°×÷‘’“”…€ ,.ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz', help='character label')
+    parser.add_argument('--sensitive', default=True, action='store_true', help='for sensitive character mode')
+    parser.add_argument('--PAD', default=True, action='store_true', help='whether to keep ratio then pad for image resize')
+    parser.add_argument('--data_filtering_off', default=False, action='store_true', help='for data_filtering_off mode')
     """ Model Architecture """
     parser.add_argument('--Transformation', type=str, required=True, help='Transformation stage. None|TPS')
     parser.add_argument('--FeatureExtraction', type=str, required=True,
@@ -279,15 +283,17 @@ if __name__ == '__main__':
     if not opt.exp_name:
         opt.exp_name = f'{opt.Transformation}-{opt.FeatureExtraction}-{opt.SequenceModeling}-{opt.Prediction}'
         opt.exp_name += f'-Seed{opt.manualSeed}'
-        # print(opt.exp_name)
+        print(opt.exp_name)
 
     os.makedirs(f'./saved_models/{opt.exp_name}', exist_ok=True)
 
     """ vocab / character number configuration """
-    if opt.sensitive:
-        # opt.character += 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
-        opt.character = string.printable[:-6]  # same with ASTER setting (use 94 char).
+    # if opt.sensitive:
+    #     opt.character = string.printable[:-6]  # same with ASTER setting (use 94 char).
+        # opt.character += "!\"#$%&'()*+-/0123456789:;<=>?@[\\]^_{|}~£¥°×÷‘’“”…€"         
+        # opt.character = " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~가각간갇갈감갑값강갖같갚갛개객걀거걱건걷걸검겁것겉게겨격겪견결겹경곁계고곡곤곧골곰곱곳공과관광괜괴굉교구국군굳굴굵굶굽궁권귀규균그극근글긁금급긋긍기긴길김깅깊까깎깐깔깜깝깥깨꺼꺾껍껏껑께껴꼬꼭꼴꼼꼽꽂꽃꽉꽤꾸꿀꿈뀌끄끈끊끌끓끔끗끝끼낌나낙낚난날낡남납낫낭낮낯낱낳내냄냉냐냥너넉널넓넘넣네넥넷녀녁년념녕노녹논놀놈농높놓놔뇌뇨누눈눕뉘뉴늄느늑는늘늙능늦늬니닐님다닥닦단닫달닭닮담답닷당닿대댁댐더덕던덜덤덥덧덩덮데델도독돈돌돕동돼되된두둑둘둠둡둥뒤뒷드득든듣들듬듭듯등디딩딪따딱딴딸땀땅때땜떠떡떤떨떻떼또똑뚜뚫뚱뛰뜨뜩뜯뜰뜻띄라락란람랍랑랗래랜램랫략량러럭런럴럼럽럿렁렇레렉렌려력련렬렵령례로록론롬롭롯료루룩룹룻뤄류륙률륭르른름릇릎리릭린림립릿마막만많말맑맘맙맛망맞맡맣매맥맨맵맺머먹먼멀멈멋멍멎메멘멩며면멸명몇모목몰몸몹못몽묘무묵묶문묻물뭄뭇뭐뭣므미민믿밀밉밌및밑바박밖반받발밝밟밤밥방밭배백뱀뱃뱉버번벌범법벗베벤벼벽변별볍병볕보복볶본볼봄봇봉뵈뵙부북분불붉붐붓붕붙뷰브블비빌빗빚빛빠빨빵빼뺨뻐뻔뻗뼈뽑뿌뿐쁘쁨사삭산살삶삼상새색샌생서석섞선설섬섭섯성세센셈셋션소속손솔솜솟송솥쇄쇠쇼수숙순술숨숫숲쉬쉽슈스슨슬슴습슷승시식신싣실싫심십싱싶싸싹쌀쌍쌓써썩썰썹쎄쏘쏟쑤쓰쓸씀씌씨씩씬씹씻아악안앉않알앓암압앗앙앞애액야약얇양얗얘어억언얹얻얼엄업없엇엉엌엎에엔엘여역연열엷염엽엿영옆예옛오옥온올옮옳옷와완왕왜왠외왼요욕용우욱운울움웃웅워원월웨웬위윗유육율으윽은을음응의이익인일읽잃임입잇있잊잎자작잔잖잘잠잡장잦재쟁저적전절젊점접젓정젖제젠젯져조족존졸좀좁종좋좌죄주죽준줄줌줍중쥐즈즉즌즐즘증지직진질짐집짓징짙짚짜짝짧째쨌쩌쩍쩐쪽쫓쭈쭉찌찍찢차착찬찮찰참창찾채책챔챙처척천철첫청체쳐초촉촌총촬최추축춘출춤춥춧충취츠측츰층치칙친칠침칭카칸칼캐캠커컨컬컴컵컷켓켜코콜콤콩쾌쿠퀴크큰클큼키킬타탁탄탈탑탓탕태택탤터턱털텅테텍텔템토톤톱통퇴투툼퉁튀튜트특튼튿틀틈티틱팀팅파팎판팔패팩팬퍼퍽페펴편펼평폐포폭표푸푹풀품풍퓨프플픔피픽필핏핑하학한할함합항해핵핸햄햇행향허헌험헤헬혀현혈협형혜호혹혼홀홍화확환활황회획횟효후훈훌훔훨휘휴흉흐흑흔흘흙흡흥흩희흰히힘"
 
+ 
     """ Seed and GPU setting """
     # print("Random Seed: ", opt.manualSeed)
     random.seed(opt.manualSeed)
@@ -298,7 +304,7 @@ if __name__ == '__main__':
     cudnn.benchmark = True
     cudnn.deterministic = True
     opt.num_gpu = torch.cuda.device_count()
-    # print('device count', opt.num_gpu)
+    print('device count', opt.num_gpu)
     if opt.num_gpu > 1:
         print('------ Use multi-GPU setting ------')
         print('if you stuck too long time with multi-GPU setting, try to set --workers 0')
