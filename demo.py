@@ -9,6 +9,8 @@ import torch.nn.functional as F
 from utils import CTCLabelConverter, AttnLabelConverter
 from dataset import RawDataset, AlignCollate
 from model import Model
+
+import os
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 
@@ -41,55 +43,57 @@ def demo(opt):
         num_workers=int(opt.workers),
         collate_fn=AlignCollate_demo, pin_memory=True)
 
-    # predict
-    model.eval()
-    with torch.no_grad():
-        for image_tensors, image_path_list in demo_loader:
-            batch_size = image_tensors.size(0)
-            image = image_tensors.to(device)
-            # For max length prediction
-            length_for_pred = torch.IntTensor([opt.batch_max_length] * batch_size).to(device)
-            text_for_pred = torch.LongTensor(batch_size, opt.batch_max_length + 1).fill_(0).to(device)
+    log_file = opt.image_folder + '/_log.txt'
+    with open(log_file, 'w') as file:
+        # predict
+        model.eval()
+        with torch.no_grad():
+            for image_tensors, image_path_list in demo_loader:
+                batch_size = image_tensors.size(0)
+                image = image_tensors.to(device)
+                # For max length prediction
+                length_for_pred = torch.IntTensor([opt.batch_max_length] * batch_size).to(device)
+                text_for_pred = torch.LongTensor(batch_size, opt.batch_max_length + 1).fill_(0).to(device)
 
-            if 'CTC' in opt.Prediction:
-                preds = model(image, text_for_pred)
+                if 'CTC' in opt.Prediction:
+                    preds = model(image, text_for_pred)
 
-                # Select max probabilty (greedy decoding) then decode index to character
-                preds_size = torch.IntTensor([preds.size(1)] * batch_size)
-                _, preds_index = preds.max(2)
-                # preds_index = preds_index.view(-1)
-                preds_str = converter.decode(preds_index, preds_size)
+                    # Select max probabilty (greedy decoding) then decode index to character
+                    preds_size = torch.IntTensor([preds.size(1)] * batch_size)
+                    _, preds_index = preds.max(2)
+                    # preds_index = preds_index.view(-1)
+                    preds_str = converter.decode(preds_index, preds_size)
 
-            else:
-                preds = model(image, text_for_pred, is_train=False)
+                else:
+                    preds = model(image, text_for_pred, is_train=False)
 
-                # select max probabilty (greedy decoding) then decode index to character
-                _, preds_index = preds.max(2)
-                preds_str = converter.decode(preds_index, length_for_pred)
+                    # select max probabilty (greedy decoding) then decode index to character
+                    _, preds_index = preds.max(2)
+                    preds_str = converter.decode(preds_index, length_for_pred)
+    
+                log = open(f'./log_all.txt', 'a')
+                # dashed_line = '-' * 80
+                # head = f'{"image_path":25s}\t{"predicted_labels":25s}\tconfidence score'                
+                # print(f'{dashed_line}\n{head}\n{dashed_line}')
+                # log.write(f'{dashed_line}\n{head}\n{dashed_line}\n')
 
+                preds_prob = F.softmax(preds, dim=2)
+                preds_max_prob, _ = preds_prob.max(dim=2)
+                for img_name, pred, pred_max_prob in zip(image_path_list, preds_str, preds_max_prob):
+                    if 'Attn' in opt.Prediction:
+                        pred_EOS = pred.find('[s]')
+                        pred = pred[:pred_EOS]  # prune after "end of sentence" token ([s])
+                        pred_max_prob = pred_max_prob[:pred_EOS]
 
-            log = open(f'./log_demo_result.txt', 'a')
-            dashed_line = '-' * 80
-            head = f'{"image_path":25s}\t{"predicted_labels":25s}\tconfidence score'
-            
-            print(f'{dashed_line}\n{head}\n{dashed_line}')
-            log.write(f'{dashed_line}\n{head}\n{dashed_line}\n')
+                    # calculate confidence score (= multiply of pred_max_prob)
+                    confidence_score = pred_max_prob.cumprod(dim=0)[-1]                  
+                    
+                    file_name, ext = os.path.splitext(os.path.basename(img_name))
+                    file.write(f'{file_name}\t{pred}\n')
+                    log.write(f'{file_name}\t{pred}\n')
+                    print(f'{img_name:25s}\t{pred:25s}\t{confidence_score:0.2f}')
 
-            preds_prob = F.softmax(preds, dim=2)
-            preds_max_prob, _ = preds_prob.max(dim=2)
-            for img_name, pred, pred_max_prob in zip(image_path_list, preds_str, preds_max_prob):
-                if 'Attn' in opt.Prediction:
-                    pred_EOS = pred.find('[s]')
-                    pred = pred[:pred_EOS]  # prune after "end of sentence" token ([s])
-                    pred_max_prob = pred_max_prob[:pred_EOS]
-
-                # calculate confidence score (= multiply of pred_max_prob)
-                confidence_score = pred_max_prob.cumprod(dim=0)[-1]
-
-                print(f'{img_name:25s}\t{pred:25s}\t{confidence_score:0.4f}')
-                log.write(f'{img_name:25s}\t{pred:25s}\t{confidence_score:0.4f}\n')
-
-            log.close()
+                log.close()
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -120,7 +124,7 @@ if __name__ == '__main__':
     parser.add_argument('--input_channel', type=int, default=1, help='the number of input channel of Feature extractor')
     parser.add_argument('--output_channel', type=int, default=512,
                         help='the number of output channel of Feature extractor')
-    parser.add_argument('--hidden_size', type=int, default=256, help='the size of the LSTM hidden state')
+    parser.add_argument('--hidden_size', type=int, default=512, help='the size of the LSTM hidden state')
 
     opt = parser.parse_args()
 
