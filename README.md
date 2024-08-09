@@ -43,14 +43,13 @@ python3 create_lmdb_dataset.py --inputPath /home/jw/data/ocrdata/ko/ --gtFile /h
 ```
 python3 train.py --exp_name 0809 --train_data /home/jw/data/ocrdata/ko/lmdb/train --valid_data /home/jw/data/ocrdata/ko/lmdb/val --imgH 96 --imgW 300 --select_data MJ-ST --batch_ratio 0.9-0.1 --Transformation TPS --FeatureExtraction ResNet --SequenceModeling BiLSTM --Prediction Attn --output_channel 512 --hidden_size 512 
 ```
-* `--rgb` default=False
-* `--input_channel` default=1, (OCR 은 3 band 필요 없다. 1 band 만 해도 충분하다)
-* `--characher` default='인식하고자 하는 문자'
+* `--exp_name` saved_models 폴더 안에 exp_name 폴더가 생성되어 모델이 저장됨
 * `--imgH` 학습할 이미지 높이 최대치 96 pixels (메모리 부족으로 32 pixels)
 * `--imgW` 학습할 이미지 너비 최대치 300 pixels (메모리 부족으로 100 pixels)
+
 ### Fine Tune: (optional) 기존 모델에 이어 학습할 경우
 ```
-python3 train.py --exp_name 0601 --train_data /home/jw/data/ocrdata/en/lmdb/ko/train --valid_data /home/jw/data/ocrdata/en/lmdb/ko/val --select_data MJ-ST --batch_ratio 0.9-0.1 --Transformation TPS --FeatureExtraction ResNet --SequenceModeling BiLSTM --Prediction Attn --output_channel 512 --hidden_size 512 --saved_model "saved_models/0530/best_accuracy.pth" --FT 
+python3 train.py --exp_name 0810 --train_data /home/jw/data/ocrdata/en/lmdb/ko/train --valid_data /home/jw/data/ocrdata/en/lmdb/ko/val --select_data MJ-ST --batch_ratio 0.9-0.1 --Transformation TPS --FeatureExtraction ResNet --SequenceModeling BiLSTM --Prediction Attn --output_channel 512 --hidden_size 512 --saved_model "saved_models/0809/best_accuracy.pth" --FT 
 ```
 
 ## 4 모델 QA
