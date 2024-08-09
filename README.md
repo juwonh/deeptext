@@ -58,5 +58,5 @@ python3 train.py --exp_name 0810 --train_data /home/jw/data/ocrdata/en/lmdb/ko/t
 2. ocrdata/_util.py extract_bbox_folder() 이용해서 text를 crop 해줌
 
 ```
-python3 demo.py --Transformation TPS --FeatureExtraction ResNet --SequenceModeling BiLSTM --Prediction Attn --output_channel 512 --hidden_size 512 --saved_model models/ko_0601.pth --image_folder /home/jw/data/ocrdata/test/가격표/ 
+python3 demo.py --Transformation TPS --FeatureExtraction ResNet --SequenceModeling BiLSTM --Prediction Attn --output_channel 512 --hidden_size 512 --saved_model saved_models/0809/best_accuracy.pth --image_folder /home/jw/data/ocrdata/test/가격표/ 
 ```
